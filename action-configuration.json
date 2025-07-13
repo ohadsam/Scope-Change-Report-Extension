@@ -1,0 +1,14 @@
+{
+  "name": "scope-change-report",
+  "title": "Scope Change Report",
+  "entity_type": [
+    "work_item"
+  ],
+  "views": [
+    "list",
+    "details"
+  ],
+  "icon": "document-configuration",
+  "url": "{bundle_url}/scope_change_report/scope_change_report.html?shared_space={shared_space}&workspace={workspace}&user_login={user_login}&email={user_email}&octane_url={octane_url}&xsrf_token={xsrf_token}&user_identity_token={user_identity_token}&entity_ids={entity_ids}&entity_type={entity_type}&query={query}&dialog_id={dialog_id}&action=scope-change-report",
+  "dialog": "large"
+}
