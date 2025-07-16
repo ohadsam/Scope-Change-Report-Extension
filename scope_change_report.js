@@ -1,29 +1,28 @@
 /* eslint-disable angular/document-service,no-console,angular/log,no-alert,no-undef */
 import { getBackgroundTask, postTrendDataDrillDown, getTrendDrillCacheWorkItems, getItems, getTrendDrillCacheGroups } from './data_fetcher.js';
 import { initScopeChart } from "./chart_designer.js";
+import { createMultiSelectDropDownComponent } from "./multiselect_dropdown.js";
 
 let releases = [];
-let sprints = [];
 let teams = [];
 let releaseMap = {};
 let sprintMap = {};
 let teamMap = {};
 let previousScopeChart = undefined;
 
-const releaseSelect = document.getElementById('release-select');
 const generateReportButton = document.getElementById('create-report');
-const sprintSelect = document.getElementById('sprint-select');
-const teamSelect = document.getElementById('team-select');
 const typeSelect = document.getElementById('type-select');
+const xaxisSelect = document.getElementById('xaxis-select');
+
+let selectedReleases = [];
+let selectedTeams = [];
 
 function initGenrateReportButton(params) {
 
     // Show release dates on button click
     generateReportButton.addEventListener('click', async () => {
-        const releaseId = releaseSelect.value;
-        const sprintId = sprintSelect.value;
-        const teamId = teamSelect.value;
-        await createScopeChangeReport(params, releaseMap[releaseId], sprintId, teamId)
+        let teamsAsString = selectedTeams ? selectedTeams.join(',') : undefined;
+        await createScopeChangeReport(params, selectedReleases, undefined, teamsAsString)
     });
 
 }
@@ -31,19 +30,20 @@ function initGenrateReportButton(params) {
 async function initTeams(params) {
     const teamsData = await getItems(params, 'team');
     teamMap = {};
+    let teamsForMultiSelect = [];
     if (teamsData.data) {
         teams = teamsData.data;
         teams.forEach(team => {
-            teamMap[teams.id] = team;
-            const option = document.createElement('option');
-            option.value = team.id;
-            option.textContent = team.name;
-            teamSelect.appendChild(option);
+            teamMap[team.id] = team;
+            teamsForMultiSelect.push({value: team.id, label: team.name});
         });
     } else {
         teams = [];
-        teamSelect.innerHTML = '<option value="">Select a team</option>';
     }
+    createMultiSelectDropDownComponent('Team','multi-team-select', teamsForMultiSelect);
+    document.getElementById('multi-team-select').addEventListener('multiSelectChange', (e) => {
+        selectedTeams = e.detail.selectedValues;
+    });
 }
 
 async function initReleases(params) {
@@ -53,95 +53,92 @@ async function initReleases(params) {
     const releasesData = await getItems(params, 'release');//await getReleases(params);
     releaseMap = {};
     sprintMap = {};
+    let releasesForMultiSelect = [];
     if (releasesData.data) {
         releases = releasesData.data;
         releases.forEach(release => {
             releaseMap[release.id] = release;
-            const option = document.createElement('option');
-            option.value = release.id;
-            option.textContent = release.name;
-            releaseSelect.appendChild(option);
+            releasesForMultiSelect.push({value: release.id, label: release.name});
         });
 
+        createMultiSelectDropDownComponent('Release','multi-release-select', releasesForMultiSelect);
+        // listen to multi teams selection
+        document.getElementById('multi-release-select').addEventListener('multiSelectChange', (e) => {
 
-        // Populate sprints when a release is selected
-        releaseSelect.addEventListener('change', async () => {
+            selectedReleases = e.detail.selectedValues;
 
-            const releaseId = releaseSelect.value;
-            if (releaseId) {
+            if (selectedReleases.length > 0) {
                 generateReportButton.removeAttribute("disabled");
             } else {
                 generateReportButton.setAttribute("disabled", "true");
             }
-
-            sprintSelect.innerHTML = '<option value=-1>No Sprint</option>';
-            const sprintsData = await getItems(params, 'sprint', parseInt(releaseId));
-            sprints = sprintsData.data;
-            if (sprints) {
-                const option = document.createElement('option');
-                option.value = -2;
-                option.textContent = "All Sprints";
-                sprintSelect.appendChild(option);
-                sprints.forEach(sprint => {
-                    sprintMap[sprint.id] = sprint;
-                    const option = document.createElement('option');
-                    option.value = sprint.id;
-                    option.textContent = sprint.name;
-                    sprintSelect.appendChild(option);
-                });
-            }
         });
     } else {
         releases = [];
-        releaseSelect.innerHTML = '<option value="No Releases">No Releases</option>';
+        createMultiSelectDropDownComponent('Release','multi-release-select', []);
     }
     initGenrateReportButton(params);
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-async function createScopeChangeReport(params, release, sprintId, teamId) {
+async function createScopeChangeReport(params, releases, sprintId, teams) {
     if (previousScopeChart) {
         previousScopeChart.destroy();
     }
     const selectedType = typeSelect.value;
+    const selectedXAxis = xaxisSelect.value;
     showLoading(true);
-    if (release && release.start_date && release.end_date) {
-        const Labels = createChartLabels(release, sprintId);
-        //if it's release scope
-        if (sprintId === "-1") {
-            const reportData = await getScopeReportData(params, selectedType, release.start_date, release.end_date, release.id, undefined, teamId);
-            previousScopeChart = initScopeChart([reportData.planned], [reportData.descoped], [reportData.unplanned], Labels);
-        } else if (sprintId === "-2" && sprintMap) {
-            let planned = [];
-            let descoped = [];
-            let unplanned = [];
-            for (const sprint of Object.values(sprintMap)) {
-                const reportData = await getScopeReportData(params, selectedType, sprint.start_date, sprint.end_date, release.id, sprint.id, teamId);
-                planned.push(reportData.planned);
-                descoped.push(reportData.descoped);
-                unplanned.push(reportData.unplanned);
+    let planned = [];
+    let descoped = [];
+    let unplanned = [];
+    if (releases.length > 0){
+        if (selectedXAxis === "xaxis-release") {
+            const Labels = createChartLabels("Release", releases, releaseMap);
+            for (const releaseID of releases) {
+                const release = releaseMap[releaseID];
+                if (release && release.start_date && release.end_date) {
+                    const reportData = await getScopeReportData(params, selectedType, release.start_date, release.end_date, release.id, undefined, teams);
+                    planned.push(reportData.planned);
+                    descoped.push(reportData.descoped);
+                    unplanned.push(reportData.unplanned);
+                }
             }
             previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels);
-        } else if (sprintMap && sprintMap[sprintId]) {
-            let sprint = sprintMap[sprintId];
-            const reportData = await getScopeReportData(params, selectedType, sprint.start_date, sprint.end_date, release.id, sprint.id, teamId);
-            previousScopeChart = initScopeChart([reportData.planned], [reportData.descoped], [reportData.unplanned], Labels);
-        } else {
-            previousScopeChart = initScopeChart([0], [0], [0], []);
+            showLoading(false);
+        } else if (selectedXAxis === "xaxis-sprint") {
+            for (const releaseID of releases) {
+                const release = releaseMap[releaseID];
+                if (!release['sprintMap']) {
+                    const sprintsData = await getItems(params, 'sprint', parseInt(releaseID));
+                    release['sprintMap'] = sprintsData.data;
+                }
+                for (const sprint of Object.values(release['sprintMap'])) {
+                    if (sprint && sprint.start_date && sprint.end_date) {
+                        const reportData = await getScopeReportData(params, selectedType, sprint.start_date, sprint.end_date, release.id, sprint.id, teams);
+                        planned.push(reportData.planned);
+                        descoped.push(reportData.descoped);
+                        unplanned.push(reportData.unplanned);
+                    }
+                }
+            }
+            const Labels = createChartLabels("Sprint", releases, releaseMap);
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels);
+            showLoading(false);
+        } else if (selectedXAxis === "xaxis-milestone") {
+
         }
-        showLoading(false);
     } else{
         previousScopeChart = initScopeChart([0], [0], [0], []);
         showLoading(false);
     }
 }
 
-async function getScopeReportData(params, entityType, startDate, endDate, releaseId, sprintID, teamID) {
+async function getScopeReportData(params, entityType, startDate, endDate, releaseId, sprintID, teams) {
     if (!params || !startDate ||!endDate) {
         return {planned: 0, descoped: 0, unplanned: 0};
     }
-    const scopeChangeData = await postTrendDataDrillDown(params, entityType, startDate, endDate, releaseId, sprintID, teamID);
+    const scopeChangeData = await postTrendDataDrillDown(params, entityType, startDate, endDate, releaseId, sprintID, teams);
     if (scopeChangeData.backgroundTask) {
         let bgSuccess = false;
         let i = 0;
@@ -184,21 +181,20 @@ async function getScopeReportData(params, entityType, startDate, endDate, releas
     }
 }
 
-function createChartLabels(release, sprintId) {
-    //it's release scope
-    if (sprintId === "-1") {
-        return ["Release: " + release.name];
-    } else if (sprintId === "-2" && sprintMap) {
-        let returnValue = [];
-        for (const sprint of Object.values(sprintMap)) {
-            returnValue.push(sprint.name);
-        }
-        return returnValue;
-    } else if (sprintMap && sprintMap[sprintId]) {
-        return ["Sprint: " + sprintMap[sprintId].name];
-    } else {
-        return [];
+function createChartLabels(entityName, entities, entityMap) {
+    const returnValue = [];
+    if (entityName === "Release") {
+        entities.forEach(entity => {
+            returnValue.push(`${entityName}: ${entityMap[entity].name}`);
+        });
+    } else if (entityName === "Sprint") {
+        entities.forEach(entity => {
+            for (const sprint of Object.values(entityMap[entity]['sprintMap'])) {
+                returnValue.push(`Release: ${entityMap[entity].name} - Sprint: ${sprint.name}`);
+            }
+        });
     }
+    return returnValue;
 }
 
 function showLoading(show) {

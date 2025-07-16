@@ -16,9 +16,9 @@ http://localhost:8080/dev/internal-api/shared_spaces/1001/workspaces/1002/trend?
 /*
 http://localhost:8080/dev/internal-api/shared_spaces/1001/workspaces/1002/trend/drill_down
  */
-export async function postTrendDataDrillDown(params, entityType, start, end, releaseID, sprintID, teamID) {
+export async function postTrendDataDrillDown(params, entityType, start, end, releaseID, sprintID, teams) {
     let sprintQueryValue = sprintID ? `;(sprint={id=${sprintID}})` : '';
-    let teamQueryValue = teamID ? `;(team={id=${teamID}})` : '';
+    let teamQueryValue = teams ? `;(team={id IN ${teams}})` : '';
     const response = await fetch(`${params.octane_url}/internal-api/shared_spaces/${params.shared_space}/workspaces/${params.workspace}/trend/drill_down`, {
         method: 'POST',
         headers: {

@@ -57,3 +57,109 @@ label {
 	justify-content: center;
 	align-items: center;
 }
+
+
+
+/*drop down*/
+
+.custom-dropdown-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-family: Arial, sans-serif;
+}
+
+.custom-dropdown button {
+	padding: 2px 12px;
+	font-size: 14px;
+	cursor: pointer;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.arrow {
+	margin-left: 6px;
+	font-size: 12px;
+}
+
+.dropdown-content {
+	display: none;
+	position: absolute;
+	background-color: #fff;
+	border: 1px solid #ccc;
+	padding: 12px;
+	width: 280px;
+	z-index: 1;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+	border-radius: 6px;
+}
+
+.options-scroll {
+	overflow-y: auto;
+	max-height: 220px; /* Adjust based on how much space you want for scrolling */
+	margin-bottom: 10px;
+	padding-right: 4px; /* Optional: space for scrollbar */
+}
+
+.dropdown-content.show {
+	display: flex;
+	flex-direction: column;
+	max-height: 300px;
+}
+
+.dropdown-content input[type="text"] {
+	width: 100%;
+	padding: 6px 10px;
+	margin-bottom: 10px;
+	box-sizing: border-box;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.group-label {
+	font-weight: bold;
+	margin: 8px 0;
+	color: #333;
+}
+
+.dropdown-content label {
+	display: block;
+	margin: 6px 0;
+	font-size: 14px;
+}
+
+.default-tag {
+	background-color: #007bff;
+	color: white;
+	font-size: 0.75em;
+	padding: 2px 6px;
+	border-radius: 12px;
+	margin-left: 6px;
+}
+
+.dropdown-buttons {
+	display: flex;
+	justify-content: end;
+	gap: 3px;
+}
+
+.dropdown-buttons button {
+	padding: 0px 12px;
+	font-size: 14px;
+	border-radius: 4px;
+	cursor: pointer;
+	border: 1px solid #007bff;
+}
+
+.ok-btn {
+	background-color: #007bff;
+	color: white;
+	border: none;
+}
+
+.clear-btn,
+.cancel-btn{
+	background-color: white;
+	color: #007bff;
+}
+

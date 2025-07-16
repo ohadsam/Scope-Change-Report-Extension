@@ -10,6 +10,7 @@
 	<script src="scope_change_report.js" type="module"></script>
 	<script src="data_fetcher.js" type="module"></script>
 	<script src="chart_designer.js" type="module"></script>
+	<script src="multiselect_dropdown.js" type="module"></script>
 </head>
 <body>
 <div id="trendData" class="absolute-stretch overflow--auto padding--15px"></div>
@@ -29,24 +30,23 @@
 	    <label for="end-date">End Date:</label>
 	    <input type="date" id="end-date" />-->
 
+	  <div id="multi-release-select"></div>
 
-	  <label for="release-select">Release:</label>
-	  <select id="release-select">
-		    <option value="">Select a release</option>
+	  <label for="xaxis-select">XAxis By:</label>
+	  <select id="xaxis-select">
+		  <option value="xaxis-release">Release</option>
+		  <option value="xaxis-sprint">Sprint</option>
+		  <option value="xaxis-milestone">Milestone</option>
 	  </select>
 
-	  <label for="sprint-select">Sprint:</label>
-	  <select id="sprint-select">
-		    <option value="">Select a sprint</option>
-	  </select>
+	  <div id="multi-team-select"></div>
 
-	  <label for="team-select">Team:</label>
+	  <!--<label for="team-select">Team:</label>
 	  <select id="team-select">
 		  <option value="">Select a team</option>
-	  </select>
+	  </select>-->
 
 	  <button id="create-report">Generate Report</button>
-
   </div>
 
   <div id="loading_icon" class="center-icon" style="display: none;">

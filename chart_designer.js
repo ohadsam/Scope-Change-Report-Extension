@@ -1,6 +1,6 @@
-const plannedColor = '#66b3ff';   // Light Blue
-const descopedColor = '#ff4d4d';  // Red
-const unplannedColor = '#66cc66'; // Green
+const plannedColor = '#00abf3';
+const descopedColor = '#d41200';
+const unplannedColor = '#00796b';
 
 
 export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labels) {
@@ -35,8 +35,44 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {position: 'top'},
-                title: {display: true, text: 'Scope Change Report'},
+                legend: {
+                    position: 'right',
+                    align: 'start',
+                    display: true,
+                    labels: {
+                        color: '#777',
+                        usePointStyle: false,
+                        boxWidth: 15,
+                        boxHeight: 15,
+                        padding: 10,
+                        font: {
+                            size: 11,
+                        },
+                        generateLabels: function(chart) {
+                            const datasets = chart.data.datasets;
+                            return datasets.map((dataset, i) => {
+                                const hidden = (chart.legend && chart.legend.legendItems && chart.legend.legendItems[i] && chart.legend.legendItems[i].hidden) ? true : false;
+
+                                return {
+                                    text: dataset.label,
+                                    fillStyle: hidden ? '#fff' : dataset.backgroundColor,
+                                    strokeStyle: '#000',
+                                    lineWidth: hidden ? 0.2 : 0,
+                                    hidden: hidden,
+                                    index: i
+                                };
+                            });
+                        }
+                    },
+                    onClick: function(e, legendItem, legend) {
+                        const index = legendItem.index;
+                        legendItem.hidden = !legendItem.hidden;
+                        const chart = legend.chart;
+                        chart.toggleDataVisibility(index);
+                        chart.update();
+                    }
+                },
+                title: {display: true, text: 'Scope Change Report', color: '#323435'},
                 datalabels: {
                     anchor: 'center',
                     align: 'top',
@@ -45,15 +81,21 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                         weight: 'bold'
                     },
                     formatter: Math.round
-                }
+                },
             },
             scales: {
                 x: {
+                    grid: {
+                        display: false
+                    },
                     stacked: false,
                     barPercentage: 1.0,
                     categoryPercentage: 0
                 },
                 y: {
+                    grid: {
+                        display: false
+                    },
                     stacked: false,
                     beginAtZero: true,
                     max: yChartMakHeight
@@ -61,5 +103,6 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
             }
         }
     });
+
     return scopeChart;
 }
