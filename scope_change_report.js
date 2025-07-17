@@ -21,8 +21,14 @@ function initGenrateReportButton(params) {
 
     // Show release dates on button click
     generateReportButton.addEventListener('click', async () => {
-        let teamsAsString = selectedTeams ? selectedTeams.join(',') : undefined;
-        await createScopeChangeReport(params, selectedReleases, undefined, teamsAsString)
+        try {
+            showError(false);
+            let teamsAsString = selectedTeams ? selectedTeams.join(',') : undefined;
+            await createScopeChangeReport(params, selectedReleases, undefined, teamsAsString)
+        } catch (error) {
+            showLoading(false);
+            showError(true, "Error while generating widget\n\n" + error);
+        }
     });
 
 }
@@ -126,7 +132,8 @@ async function createScopeChangeReport(params, releases, sprintId, teams) {
             previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels);
             showLoading(false);
         } else if (selectedXAxis === "xaxis-milestone") {
-
+            showError(true, "Milestone Not Supported Yet\n\n" + "coming soon...");
+            showLoading(false);
         }
     } else{
         previousScopeChart = initScopeChart([0], [0], [0], []);
@@ -202,6 +209,14 @@ function showLoading(show) {
     if (icon) {
         icon.style.display = show ? "flex" : "none";
     }
+}
+
+function showError(show, message) {
+    const error = document.getElementById('error-dialog-content');
+    error.style.display = show ? "flex" : "none";
+    error.textContent = message;
+    const canvasDialog = document.getElementById('dialog-content');
+    canvasDialog.style.display = !show ? "flex" : "none";
 }
 
 

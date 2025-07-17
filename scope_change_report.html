@@ -17,7 +17,7 @@
 
   <div class="controls">
 	    <label for="type-select">Type:</label>
-	    <select id="type-select">
+	    <select id="type-select" class="select-dropdown">
 	      <option value="feature">Feature</option>
 	      <option value="story">Story</option>
 	      <option value="defect">Defect</option>
@@ -33,7 +33,7 @@
 	  <div id="multi-release-select"></div>
 
 	  <label for="xaxis-select">XAxis By:</label>
-	  <select id="xaxis-select">
+	  <select id="xaxis-select" class="select-dropdown">
 		  <option value="xaxis-release">Release</option>
 		  <option value="xaxis-sprint">Sprint</option>
 		  <option value="xaxis-milestone">Milestone</option>
@@ -46,7 +46,7 @@
 		  <option value="">Select a team</option>
 	  </select>-->
 
-	  <button id="create-report">Generate Report</button>
+	  <button id="create-report" class="generate-btn">Generate Report</button>
   </div>
 
   <div id="loading_icon" class="center-icon" style="display: none;">
@@ -59,6 +59,8 @@
 			<canvas id="scopeChart"></canvas>
 	  </div>
 	</div>
+
+	<div id="error-dialog-content" class="error-dialog-content"></div>
 
 
 

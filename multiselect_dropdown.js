@@ -7,11 +7,14 @@
         const html = `
       <div class="custom-dropdown-wrapper">
         <label>${entityName}:</label>
-        <input type="text" id="${containerId}-selected" class="selection-display" readonly placeholder="No selection" />
         <div class="custom-dropdown">
-          <button class="dropdown-toggle">
-            Select ${entityName} <span class="arrow">&#9662;</span>
-          </button>
+          <div class="input-container">
+            <div id="${containerId}-selected-tags" class="selected-tags"></div>
+            <input type="text" id="${containerId}-selected" class="selection-display" readonly />
+            <button class="dropdown-toggle" type="button">
+              <span class="arrow">&#9662;</span>
+            </button>
+          </div>
           <div class="dropdown-content">
             <input type="text" class="search-input" placeholder="Search...">
             <div class="options-scroll">
@@ -48,23 +51,62 @@
         wrapper.querySelector('.ok-btn').addEventListener('click', () => {
             const selected = [];
             const selectedIDs = [];
+            const checkboxIDs = [];
+            let checkboxIndex = 0;
             checkboxes.forEach(cb => {
                 if (cb.checked) {
                     selected.push(cb.parentElement.textContent.trim());
                     selectedIDs.push(cb.value);
+                    checkboxIDs.push(checkboxIndex);
                 }
+                checkboxIndex++;
             });
             previousSelection = selected;
-            display.value = selected.join(', ') || 'No selection';
+
+            display.value = ''; // Clear text input
+            const tagsContainer = wrapper.querySelector('.selected-tags');
+            tagsContainer.innerHTML = '';
+            selected.forEach((text, i) => {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.setAttribute('cb-index', checkboxIDs[i]);
+                tag.setAttribute('cb-text', text);
+
+                const textTag = document.createElement('span');
+                textTag.className = 'tag-text';
+                textTag.textContent = text;
+
+                const remove = document.createElement('span');
+                remove.className = 'remove-tag';
+                remove.textContent = '×';
+                remove.onclick = (e) => {
+                    const selected = [];
+                    const selectedIDs = [];
+                    const checkboxIDs = [];
+                    const index = e.currentTarget.parentElement.getAttribute('cb-index');
+                    checkboxes[index].checked = false;
+                    let cbIndex = 0;
+                    checkboxes.forEach(cb => {
+                        if (cb.checked) {
+                            selected.push(cb.parentElement.textContent.trim());
+                            selectedIDs.push(cb.value);
+                            checkboxIDs.push(cbIndex);
+                        }
+                        cbIndex++;
+                    });
+                    previousSelection = selected;
+                    tag.remove();
+                    triggerMultiSelectEvent(container, selected, selectedIDs, checkboxIDs);
+                };
+
+                tag.appendChild(textTag);
+                tag.appendChild(remove);
+                tagsContainer.appendChild(tag);
+            });
+
             dropdown.classList.remove('show');
 
-            const event = new CustomEvent('multiSelectChange', {
-                detail: {
-                    selectedText: selected,
-                    selectedValues: selectedIDs
-                }
-            });
-            container.dispatchEvent(event);
+            triggerMultiSelectEvent(container, selected, selectedIDs, checkboxIDs);
         });
 
         wrapper.querySelector('.cancel-btn').addEventListener('click', () => {
@@ -91,4 +133,15 @@
                 dropdown.classList.remove('show');
             }
         });
+    }
+
+    function triggerMultiSelectEvent(container, selected, selectedIDs, checkboxIDs) {
+        const event = new CustomEvent('multiSelectChange', {
+            detail: {
+                selectedText: selected,
+                selectedValues: selectedIDs,
+                checkboxIDs: checkboxIDs
+            }
+        });
+        container.dispatchEvent(event);
     }
