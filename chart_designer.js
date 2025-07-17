@@ -65,11 +65,20 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                         }
                     },
                     onClick: function(e, legendItem, legend) {
-                        const index = legendItem.index;
-                        legendItem.hidden = !legendItem.hidden;
-                        const chart = legend.chart;
+                        //const index = legendItem.index;
+                        //legendItem.hidden = !legendItem.hidden;
+                        /*const chart = legend.chart;
                         chart.toggleDataVisibility(index);
-                        chart.update();
+                        chart.update();*/
+                        const index = legendItem.index;
+                        const ci = legend.chart;
+                        if (ci.isDatasetVisible(index)) {
+                            legendItem.hidden = true;
+                            ci.hide(index);
+                        } else {
+                            legendItem.hidden = false;
+                            ci.show(index);
+                        }
                     }
                 },
                 title: {display: true, text: 'Scope Change Report', color: '#323435'},
