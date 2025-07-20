@@ -11,17 +11,21 @@
 	<script src="data_fetcher.js" type="module"></script>
 	<script src="chart_designer.js" type="module"></script>
 	<script src="multiselect_dropdown.js" type="module"></script>
+	<script src="scope_type_selector.js" type="module"></script>
+	<script src="date_utils.js" type="module"></script>
 </head>
 <body>
 <div id="trendData" class="absolute-stretch overflow--auto padding--15px"></div>
 
   <div class="controls">
+
 	    <label for="type-select">Type:</label>
 	    <select id="type-select" class="select-dropdown">
-	      <option value="feature">Feature</option>
-	      <option value="story">Story</option>
-	      <option value="defect">Defect</option>
-	      <option value="quality_story">Quality Story</option>
+	        <option value="feature">Feature</option>
+			<option value="backlog_items">Backlog Items</option>
+			<option value="story">Story</option>
+			<option value="defect">Defect</option>
+			<option value="quality_story">Quality Story</option>
 	    </select>
 
 	    <!--<label for="start-date">Start Date:</label>
@@ -32,12 +36,13 @@
 
 	  <div id="multi-release-select"></div>
 
-	  <label for="xaxis-select">XAxis By:</label>
+	  <div id="scope-type-selector"></div>
+	  <!--<label for="xaxis-select">XAxis By:</label>
 	  <select id="xaxis-select" class="select-dropdown">
 		  <option value="xaxis-release">Release</option>
 		  <option value="xaxis-sprint">Sprint</option>
 		  <option value="xaxis-milestone">Milestone</option>
-	  </select>
+	  </select>-->
 
 	  <div id="multi-team-select"></div>
 

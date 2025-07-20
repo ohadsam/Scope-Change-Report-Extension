@@ -2,6 +2,8 @@
 import { getBackgroundTask, postTrendDataDrillDown, getTrendDrillCacheWorkItems, getItems, getTrendDrillCacheGroups } from './data_fetcher.js';
 import { initScopeChart } from "./chart_designer.js";
 import { createMultiSelectDropDownComponent } from "./multiselect_dropdown.js";
+import { calculateDateInFormat } from "./date_utils.js";
+import { createScopeTypeSelectorComponent } from "./scope_type_selector.js";
 
 let releases = [];
 let teams = [];
@@ -12,7 +14,7 @@ let previousScopeChart = undefined;
 
 const generateReportButton = document.getElementById('create-report');
 const typeSelect = document.getElementById('type-select');
-const xaxisSelect = document.getElementById('xaxis-select');
+let xaxisSelect = undefined
 
 let selectedReleases = [];
 let selectedTeams = [];
@@ -101,10 +103,14 @@ async function createScopeChangeReport(params, releases, sprintId, teams) {
     if (releases.length > 0){
         if (selectedXAxis === "xaxis-release") {
             const Labels = createChartLabels("Release", releases, releaseMap);
+            const startDateBuffer = document.getElementById('start-date-planning-buffer').value;
+            const endDateBuffer = document.getElementById('end-date-planning-buffer').value;
             for (const releaseID of releases) {
                 const release = releaseMap[releaseID];
                 if (release && release.start_date && release.end_date) {
-                    const reportData = await getScopeReportData(params, selectedType, release.start_date, release.end_date, release.id, undefined, teams);
+                    const releaseStartDate = calculateDateInFormat(release.start_date, parseInt(startDateBuffer), "after");
+                    const releaseEndDate = calculateDateInFormat(release.end_date, parseInt(endDateBuffer), "after");
+                    const reportData = await getScopeReportData(params, selectedType, releaseStartDate, releaseEndDate, release.id, undefined, undefined, teams);
                     planned.push(reportData.planned);
                     descoped.push(reportData.descoped);
                     unplanned.push(reportData.unplanned);
@@ -119,9 +125,13 @@ async function createScopeChangeReport(params, releases, sprintId, teams) {
                     const sprintsData = await getItems(params, 'sprint', parseInt(releaseID));
                     release['sprintMap'] = sprintsData.data;
                 }
+                const startDateBuffer = document.getElementById('start-date-planning-buffer').value;
+                const endDateBuffer = document.getElementById('end-date-planning-buffer').value;
                 for (const sprint of Object.values(release['sprintMap'])) {
                     if (sprint && sprint.start_date && sprint.end_date) {
-                        const reportData = await getScopeReportData(params, selectedType, sprint.start_date, sprint.end_date, release.id, sprint.id, teams);
+                        const sprintStartDate = calculateDateInFormat(sprint.start_date, parseInt(startDateBuffer), "after");
+                        const sprintEndDate = calculateDateInFormat(sprint.end_date, parseInt(endDateBuffer), "after");
+                        const reportData = await getScopeReportData(params, selectedType, sprintStartDate, sprintEndDate, release.id, sprint.id, undefined, teams);
                         planned.push(reportData.planned);
                         descoped.push(reportData.descoped);
                         unplanned.push(reportData.unplanned);
@@ -132,7 +142,25 @@ async function createScopeChangeReport(params, releases, sprintId, teams) {
             previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels);
             showLoading(false);
         } else if (selectedXAxis === "xaxis-milestone") {
-            showError(true, "Milestone Not Supported Yet\n\n" + "coming soon...");
+            for (const releaseID of releases) {
+                const release = releaseMap[releaseID];
+                if (!release['milestoneMap']) {
+                    const milestonesData = await getItems(params, 'milestone', parseInt(releaseID), true);
+                    release['milestoneMap'] = milestonesData.data;
+                }
+                const milestoneLength = document.getElementById('milestone-length').value;
+                for (const milestone of Object.values(release['milestoneMap'])) {
+                    const milestoneStartDate = calculateDateInFormat(milestone.date, parseInt(milestoneLength), "before");
+                    if (milestone && milestone.date) {
+                        const reportData = await getScopeReportData(params, selectedType, milestoneStartDate, milestone.date, release.id, undefined, milestone.id, teams);
+                        planned.push(reportData.planned);
+                        descoped.push(reportData.descoped);
+                        unplanned.push(reportData.unplanned);
+                    }
+                }
+            }
+            const Labels = createChartLabels("Milestone", releases, releaseMap);
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels);
             showLoading(false);
         }
     } else{
@@ -141,11 +169,12 @@ async function createScopeChangeReport(params, releases, sprintId, teams) {
     }
 }
 
-async function getScopeReportData(params, entityType, startDate, endDate, releaseId, sprintID, teams) {
+async function getScopeReportData(params, entityType, startDate, endDate, releaseId, sprintID, milestoneID, teams) {
     if (!params || !startDate ||!endDate) {
         return {planned: 0, descoped: 0, unplanned: 0};
     }
-    const scopeChangeData = await postTrendDataDrillDown(params, entityType, startDate, endDate, releaseId, sprintID, teams);
+
+    const scopeChangeData = await postTrendDataDrillDown(params, entityType, startDate, endDate, releaseId, sprintID, milestoneID, teams);
     if (scopeChangeData.backgroundTask) {
         let bgSuccess = false;
         let i = 0;
@@ -200,6 +229,12 @@ function createChartLabels(entityName, entities, entityMap) {
                 returnValue.push(`Release: ${entityMap[entity].name} - Sprint: ${sprint.name}`);
             }
         });
+    } else if (entityName === "Milestone") {
+        entities.forEach(entity => {
+            for (const milestone of Object.values(entityMap[entity]['milestoneMap'])) {
+                returnValue.push(`Release: ${entityMap[entity].name} - Milestone: ${milestone.name}`);
+            }
+        });
     }
     return returnValue;
 }
@@ -217,6 +252,9 @@ function showError(show, message) {
     error.textContent = message;
     const canvasDialog = document.getElementById('dialog-content');
     canvasDialog.style.display = !show ? "flex" : "none";
+    if(show) {
+        console.log("Error: " + message);
+    }
 }
 
 
@@ -229,6 +267,8 @@ function showError(show, message) {
 
 
     await fetchParams();
+
+    xaxisSelect = createScopeTypeSelectorComponent('scope-type-selector');
 
     await initReleases(params);
 

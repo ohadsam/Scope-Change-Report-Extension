@@ -2,6 +2,7 @@ const entityNamesToValues = {
     release: {name: 'releases', fields: 'id,is_default,name,end_date,activity_level,start_date', order_by: '-id'},
     sprint: {name:'sprints', fields: 'id,name,start_date,end_date,shared', order_by: 'id'},
     team: {name: 'teams', fields: 'id,name', order_by: 'name'},
+    milestone: {name:'milestones', fields: 'date,shared,activity_level,id,release_specific,name', order_by: 'id'},
 };
 
 /*
@@ -16,9 +17,12 @@ http://localhost:8080/dev/internal-api/shared_spaces/1001/workspaces/1002/trend?
 /*
 http://localhost:8080/dev/internal-api/shared_spaces/1001/workspaces/1002/trend/drill_down
  */
-export async function postTrendDataDrillDown(params, entityType, start, end, releaseID, sprintID, teams) {
+export async function postTrendDataDrillDown(params, entityType, start, end, releaseID, sprintID, milestoneID, teams) {
     let sprintQueryValue = sprintID ? `;(sprint={id=${sprintID}})` : '';
+    let milestoneQueryValue = milestoneID ? `;(milestone={id=${milestoneID}})` : '';
     let teamQueryValue = teams ? `;(team={id IN ${teams}})` : '';
+    let entityTypeQueryValue = (entityType === 'backlog_items' ? `(subtype IN 'story','defect','quality_story');` : `(subtype='${entityType}');`);
+    let entitySubTypeBodyField = (entityType === 'backlog_items' ? 'story,defect,quality_story' : entityType);
     const response = await fetch(`${params.octane_url}/internal-api/shared_spaces/${params.shared_space}/workspaces/${params.workspace}/trend/drill_down`, {
         method: 'POST',
         headers: {
@@ -37,8 +41,8 @@ export async function postTrendDataDrillDown(params, entityType, start, end, rel
             //'groupby': 'team',
             //'sets': "[{\"query\":\"((subtype='story');(phase={(metaphase={id='metaphase.work_item.done'})}))\",\"groupBy\":true,\"key\":\"singleLine\",\"overrideField\":null}]",
             //'sets': `[{\"query\":\"((subtype='${entityType}');(release={id=${releaseID}});`+sprintQueryValue+`(phase={(metaphase={id='metaphase.work_item.done'})}))\",\"groupBy\":false,\"key\":\"singleLine\",\"overrideField\":null}]`,
-            'sets': `[{\"query\":\"((subtype='${entityType}');(release={id=${releaseID}})${sprintQueryValue}${teamQueryValue})\",\"groupBy\":false,\"key\":\"singleLine\",\"overrideField\":null}]`,
-            'entity-subtypes': entityType,
+            'sets': `[{\"query\":\"(${entityTypeQueryValue}(release={id=${releaseID}})${sprintQueryValue}${milestoneQueryValue}${teamQueryValue})\",\"groupBy\":false,\"key\":\"singleLine\",\"overrideField\":null}]`,
+            'entity-subtypes': entitySubTypeBodyField,
             'compare_start_date': start,
             'compare_end_date': end,
             //'group_by_value': '1001'
@@ -71,7 +75,8 @@ export async function getTrendDrillCacheGroups(params, cacheID) {
 http://localhost:8080/dev/api/shared_spaces/1001/workspaces/1002/work_items?fields=id,name,is_deleted_entity,trend_drill_down_field_old_values,trend_drill_down_field_new_values,rank,phase,epic_level,followed_by_me,blocked,has_attachments,story_points,sprint,author,tasks_number,subtype,owner,shared,entity_icon,author{full_name},owner{full_name},parent{entity_icon,subtype},release{end_date},detected_in_release{end_date},milestone{release_specific,date,release}&limit=100&offset=0&order_by=id&query="((trend_drill_cache_data={((trend_drill_cache={(id='1004')});(category=2))});(subtype='story'))"&trend_drill_down_cache_data_category=2&trend_drill_down_cache_id=1004
  */
 export async function getTrendDrillCacheWorkItems(params, entityType, cacheID, category) {
-    const response = await fetch(`${params.octane_url}/api/shared_spaces/${params.shared_space}/workspaces/${params.workspace}/work_items?fields=id,name,is_deleted_entity,trend_drill_down_field_old_values,trend_drill_down_field_new_values,phase,story_points,sprint,author,subtype,owner,entity_icon,author{full_name},owner{full_name},parent{entity_icon,subtype},release{end_date},detected_in_release{end_date},milestone{release_specific,date,release}&limit=2000&offset=0&order_by=id&query="((trend_drill_cache_data={((trend_drill_cache={(id='${cacheID}')});(category=${category}))});(subtype='${entityType}'))"&trend_drill_down_cache_data_category=2&trend_drill_down_cache_id=${cacheID}"`);
+    let entityTypeQueryValue = (entityType === 'backlog_items' ? `;(subtype IN 'story','defect','quality_story');` : `;(subtype='${entityType}')`);
+    const response = await fetch(`${params.octane_url}/api/shared_spaces/${params.shared_space}/workspaces/${params.workspace}/work_items?fields=id,name,is_deleted_entity,trend_drill_down_field_old_values,trend_drill_down_field_new_values,phase,story_points,sprint,author,subtype,owner,entity_icon,author{full_name},owner{full_name},parent{entity_icon,subtype},release{end_date},detected_in_release{end_date},milestone{release_specific,date,release}&limit=2000&offset=0&order_by=id&query="((trend_drill_cache_data={((trend_drill_cache={(id='${cacheID}')});(category=${category}))});${entityTypeQueryValue})"&trend_drill_down_cache_data_category=2&trend_drill_down_cache_id=${cacheID}"`);
     const data = await response.json();
     return data;
 }
@@ -94,12 +99,17 @@ export async function getSprints(params, releaseID){
     return data;
 }*/
 
-export async function getItems(params, entityName, releaseID){
+export async function getItems(params, entityName, releaseID, releaseSpecific){
     const entityVal = entityNamesToValues[entityName];
     if (entityVal) {
         let query = '';
         if (releaseID) {
-            query = `&query="(release={id=${releaseID}})"`;
+            query = `&query="(`;
+            query += `(release={id=${releaseID}})`;
+            if (releaseSpecific) {
+                query += ';(release_specific=true)';
+            }
+            query += `)"`;
         }
         const response = await fetch(`${params.octane_url}/api/shared_spaces/${params.shared_space}/workspaces/${params.workspace}/${entityVal.name}?fields=${entityVal.fields}${query}&order_by=${entityVal.order_by}`);
         const data = await response.json();

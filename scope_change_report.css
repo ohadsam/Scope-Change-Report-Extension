@@ -16,6 +16,10 @@ label {
 		padding: 5px;
 		font-size: 14px;
 	}
+	font-weight input[type="number"] {
+		margin-left: 10px;
+		font-size: 14px;
+	}
 }
 
 
@@ -73,6 +77,14 @@ label {
 	height: 28px;
 }
 
+.margin--left--10 {
+	margin-left: 10px;
+}
+
+.number-input {
+	padding: 5px;
+	width: 50px;
+}
 
 /*drop down*/
 
