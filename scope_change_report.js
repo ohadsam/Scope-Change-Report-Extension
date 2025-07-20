@@ -5,6 +5,7 @@ import { createMultiSelectDropDownComponent } from "./multiselect_dropdown.js";
 import { calculateDateInFormat } from "./date_utils.js";
 import { createScopeTypeSelectorComponent } from "./scope_type_selector.js";
 
+let params = {};
 let releases = [];
 let teams = [];
 let releaseMap = {};
@@ -13,29 +14,55 @@ let teamMap = {};
 let previousScopeChart = undefined;
 
 const generateReportButton = document.getElementById('create-report');
+const showWidgetSideBarButton = document.getElementById('show-widget-btn');
 const typeSelect = document.getElementById('type-select');
 let xaxisSelect = undefined
 
 let selectedReleases = [];
 let selectedTeams = [];
 
-function initGenrateReportButton(params) {
+function enableGenerateButton(enabledBtn) {
+    if (enabledBtn) {
+        generateReportButton.removeAttribute("disabled");
+        showWidgetSideBarButton.removeAttribute("disabled");
+    } else {
+        generateReportButton.setAttribute("disabled", "true");
+        showWidgetSideBarButton.setAttribute("disabled", "true");
+    }
+}
+
+async function generateReportClicked() {
+    try {
+        toggleSidebarSelection(showWidgetSideBarButton);
+        document.getElementById('config').style.display = 'none';
+        document.getElementById('widget').style.display = 'block';
+        showError(false);
+        let teamsAsString = selectedTeams ? selectedTeams.join(',') : undefined;
+        await createScopeChangeReport(selectedReleases, undefined, teamsAsString)
+    } catch (error) {
+        showLoading(false);
+        showError(true, "Error while generating widget\n\n" + error);
+    }
+}
+
+function initGenrateReportButton() {
 
     // Show release dates on button click
     generateReportButton.addEventListener('click', async () => {
-        try {
+        await generateReportClicked();
+        /*try {
             showError(false);
             let teamsAsString = selectedTeams ? selectedTeams.join(',') : undefined;
             await createScopeChangeReport(params, selectedReleases, undefined, teamsAsString)
         } catch (error) {
             showLoading(false);
             showError(true, "Error while generating widget\n\n" + error);
-        }
+        }*/
     });
 
 }
 
-async function initTeams(params) {
+async function initTeams() {
     const teamsData = await getItems(params, 'team');
     teamMap = {};
     let teamsForMultiSelect = [];
@@ -54,11 +81,12 @@ async function initTeams(params) {
     });
 }
 
-async function initReleases(params) {
+async function initReleases() {
+    enableGenerateButton(false);
 
-    generateReportButton.setAttribute("disabled", "true");
+    //generateReportButton.setAttribute("disabled", "true");
 
-    const releasesData = await getItems(params, 'release');//await getReleases(params);
+    const releasesData = await getItems(params, 'release');
     releaseMap = {};
     sprintMap = {};
     let releasesForMultiSelect = [];
@@ -75,22 +103,23 @@ async function initReleases(params) {
 
             selectedReleases = e.detail.selectedValues;
 
-            if (selectedReleases.length > 0) {
+            /*if (selectedReleases.length > 0) {
                 generateReportButton.removeAttribute("disabled");
             } else {
                 generateReportButton.setAttribute("disabled", "true");
-            }
+            }*/
+            enableGenerateButton(selectedReleases.length > 0);
         });
     } else {
         releases = [];
         createMultiSelectDropDownComponent('Release','multi-release-select', []);
     }
-    initGenrateReportButton(params);
+    initGenrateReportButton();
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-async function createScopeChangeReport(params, releases, sprintId, teams) {
+async function createScopeChangeReport(releases, sprintId, teams) {
     if (previousScopeChart) {
         previousScopeChart.destroy();
     }
@@ -110,7 +139,7 @@ async function createScopeChangeReport(params, releases, sprintId, teams) {
                 if (release && release.start_date && release.end_date) {
                     const releaseStartDate = calculateDateInFormat(release.start_date, parseInt(startDateBuffer), "after");
                     const releaseEndDate = calculateDateInFormat(release.end_date, parseInt(endDateBuffer), "after");
-                    const reportData = await getScopeReportData(params, selectedType, releaseStartDate, releaseEndDate, release.id, undefined, undefined, teams);
+                    const reportData = await getScopeReportData(selectedType, releaseStartDate, releaseEndDate, release.id, undefined, undefined, teams);
                     planned.push(reportData.planned);
                     descoped.push(reportData.descoped);
                     unplanned.push(reportData.unplanned);
@@ -131,7 +160,7 @@ async function createScopeChangeReport(params, releases, sprintId, teams) {
                     if (sprint && sprint.start_date && sprint.end_date) {
                         const sprintStartDate = calculateDateInFormat(sprint.start_date, parseInt(startDateBuffer), "after");
                         const sprintEndDate = calculateDateInFormat(sprint.end_date, parseInt(endDateBuffer), "after");
-                        const reportData = await getScopeReportData(params, selectedType, sprintStartDate, sprintEndDate, release.id, sprint.id, undefined, teams);
+                        const reportData = await getScopeReportData(selectedType, sprintStartDate, sprintEndDate, release.id, sprint.id, undefined, teams);
                         planned.push(reportData.planned);
                         descoped.push(reportData.descoped);
                         unplanned.push(reportData.unplanned);
@@ -152,7 +181,7 @@ async function createScopeChangeReport(params, releases, sprintId, teams) {
                 for (const milestone of Object.values(release['milestoneMap'])) {
                     const milestoneStartDate = calculateDateInFormat(milestone.date, parseInt(milestoneLength), "before");
                     if (milestone && milestone.date) {
-                        const reportData = await getScopeReportData(params, selectedType, milestoneStartDate, milestone.date, release.id, undefined, milestone.id, teams);
+                        const reportData = await getScopeReportData(selectedType, milestoneStartDate, milestone.date, release.id, undefined, milestone.id, teams);
                         planned.push(reportData.planned);
                         descoped.push(reportData.descoped);
                         unplanned.push(reportData.unplanned);
@@ -169,8 +198,8 @@ async function createScopeChangeReport(params, releases, sprintId, teams) {
     }
 }
 
-async function getScopeReportData(params, entityType, startDate, endDate, releaseId, sprintID, milestoneID, teams) {
-    if (!params || !startDate ||!endDate) {
+async function getScopeReportData(entityType, startDate, endDate, releaseId, sprintID, milestoneID, teams) {
+    if (!startDate ||!endDate) {
         return {planned: 0, descoped: 0, unplanned: 0};
     }
 
@@ -257,22 +286,37 @@ function showError(show, message) {
     }
 }
 
+function toggleSidebarSelection(selectedBtn) {
+    document.querySelectorAll('.sidebar-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    selectedBtn.classList.add('active');
+}
+
 
 (async function () {
     'use strict';
 
     //const container = document.querySelector('.parameter-container');
 
-    let params = {};
+    const showConfigBtn = document.getElementById('show-config-btn');
+    showConfigBtn.addEventListener('click', () => {
+        toggleSidebarSelection(showConfigBtn);
+        document.getElementById('config').style.display = 'block';
+        document.getElementById('widget').style.display = 'none';
+    });
 
+    showWidgetSideBarButton.addEventListener('click', () => {
+        generateReportClicked();
+    });
 
     await fetchParams();
 
     xaxisSelect = createScopeTypeSelectorComponent('scope-type-selector');
 
-    await initReleases(params);
+    await initReleases();
 
-    await initTeams(params);
+    await initTeams();
 
 
     //startUserIdentityValidation();

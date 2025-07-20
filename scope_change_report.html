@@ -15,7 +15,58 @@
 	<script src="date_utils.js" type="module"></script>
 </head>
 <body>
-<div id="trendData" class="absolute-stretch overflow--auto padding--15px"></div>
+<div class="layout-container">
+	<!-- Left Sidebar -->
+	<div class="sidebar">
+		<button id="show-config-btn" class="sidebar-btn active">Configuration</button>
+		<button id="show-widget-btn" class="sidebar-btn">Widget</button>
+	</div>
+
+	<!-- Right Content Area -->
+	<div class="content">
+		<!-- Config Section -->
+		<div id="config" class="content-section">
+			<div class="controls">
+				<label for="type-select">Type:</label>
+				<select id="type-select" class="select-dropdown">
+					<option value="feature">Feature</option>
+					<option value="backlog_items">Backlog Items</option>
+					<option value="story">Story</option>
+					<option value="defect">Defect</option>
+					<option value="quality_story">Quality Story</option>
+				</select>
+
+				<div id="multi-release-select"></div>
+				<div id="scope-type-selector"></div>
+				<div id="multi-team-select"></div>
+
+				<button id="create-report" class="generate-btn">Generate Report</button>
+			</div>
+		</div>
+
+		<!-- Widget Section -->
+		<div id="widget" class="content-section" style="display: none;">
+			<div id="trendData" class="absolute-stretch overflow--auto padding--15px"></div>
+
+			<div id="loading_icon" class="center-icon" style="display: none;">
+				<object type="image/svg+xml" data="loading_icon.svg"></object>
+			</div>
+
+			<div id="dialog-content" class="dialog-content">
+				<div id="chart-container">
+					<!-- Chart will be rendered here -->
+					<canvas id="scopeChart"></canvas>
+				</div>
+			</div>
+
+			<div id="error-dialog-content" class="error-dialog-content"></div>
+		</div>
+	</div>
+</div>
+</body>
+<!--
+<body>
+<div id="trendData" class="absolute-stretch overflow&#45;&#45;auto padding&#45;&#45;15px"></div>
 
   <div class="controls">
 
@@ -28,28 +79,17 @@
 			<option value="quality_story">Quality Story</option>
 	    </select>
 
-	    <!--<label for="start-date">Start Date:</label>
+	    &lt;!&ndash;<label for="start-date">Start Date:</label>
 	    <input type="date" id="start-date" />
 
 	    <label for="end-date">End Date:</label>
-	    <input type="date" id="end-date" />-->
+	    <input type="date" id="end-date" />&ndash;&gt;
 
 	  <div id="multi-release-select"></div>
 
 	  <div id="scope-type-selector"></div>
-	  <!--<label for="xaxis-select">XAxis By:</label>
-	  <select id="xaxis-select" class="select-dropdown">
-		  <option value="xaxis-release">Release</option>
-		  <option value="xaxis-sprint">Sprint</option>
-		  <option value="xaxis-milestone">Milestone</option>
-	  </select>-->
 
 	  <div id="multi-team-select"></div>
-
-	  <!--<label for="team-select">Team:</label>
-	  <select id="team-select">
-		  <option value="">Select a team</option>
-	  </select>-->
 
 	  <button id="create-report" class="generate-btn">Generate Report</button>
   </div>
@@ -60,144 +100,13 @@
 
 	<div id="dialog-content" class="dialog-content">
 	  <div id="chart-container">
-			<!-- Chart will be rendered here -->
+			&lt;!&ndash; Chart will be rendered here &ndash;&gt;
 			<canvas id="scopeChart"></canvas>
 	  </div>
 	</div>
 
 	<div id="error-dialog-content" class="error-dialog-content"></div>
 
-
-
-
-<!--<div class="absolute-stretch overflow&#45;&#45;auto padding&#45;&#45;15px">
-	<div class="text&#45;&#45;xxxl2 text&#45;&#45;bold">Parameters</div>
-	<ul class="parameter-container"></ul>
-	<div class="divider-line"></div>
-
-	<div>
-		<div>has opener: <span id="hasOpenerValue"></span></div>
-		<div>has parent: <span id="hasParentValue"></span></div>
-	</div>
-
-	<div class="divider-line"></div>
-
-	<form onsubmit="return false;">
-		<fieldset>
-			<p>
-				<button onclick="tryLoadOctaneData()">Fetch data</button>
-			</p>
-			<div class="form-row">
-				<div>Can fetch data from octane: <span id="canFetchDataValue"></span></div>
-			</div>
-		</fieldset>
-	</form>
-
-	<div id="userIdentityValidationBlock" style="display: none">
-		<div class="divider-line"></div>
-		<div>
-			<strong>User identity validation failed:</strong>&nbsp;
-			<span id="userIdentityValidationErrorMessage"></span>
-		</div>
-	</div>
-
-	<div id="messageOctaneButtons" style="display: none">
-		<div class="divider-line"></div>
-		<div id="refreshOctaneEntityBlock">
-			<form style="max-width: 400px" onsubmit="return false;">
-				<fieldset>
-					<div class="form-row">
-						<div class="form-field">
-							<label>
-								<span>Entity type:</span>
-								<input type="text" id="entity_type" name="entity_type" value="work_item" class="flex&#45;&#45;1" />
-							</label>
-						</div>
-						<div class="form-field">
-							<label>
-								<span>Entity ID:</span>
-								<input type="text" id="entity_id" name="entity_id" class="flex&#45;&#45;1" />
-							</label>
-						</div>
-					</div>
-					<div class="margin-t&#45;&#45;20px">
-						<p>
-							<button onclick="refreshOctaneEntity()">refresh entity</button>
-						</p>
-						<p>
-							<button onclick="refreshOctaneList()">refresh list</button>
-						</p>
-						<p>
-							<button onclick="displayOctaneEntity()">display entity</button>
-						</p>
-						<p>
-							<button onclick="selectOctaneEntity()">select entity</button>
-						</p>
-						<p>
-							<button onclick="notifyOfNewOctaneEntity()">notify of new entity</button>
-						</p>
-						<p>
-							<button onclick="updateSettings('application')">Update application settings</button>
-						</p>
-						<p>
-							<button onclick="readSettings('application')">Read application settings</button>
-						</p>
-						<p>
-							<button onclick="updateSettings('module')">Update module settings</button>
-						</p>
-						<p>
-							<button onclick="readSettings('module')">Read module settings</button>
-						</p>
-					</div>
-				</fieldset>
-			</form>
-		</div>
-
-		<div id="setOctaneDialogTitleBlock" style="display: none">
-			<div class="divider-line"></div>
-			<form onsubmit="return false;">
-				<fieldset>
-					<div class="form-row"><span>Dialog ID: </span><span id="dialogId"></span></div>
-					<div class="form-row">
-						<div class="form-field">
-							<label>
-								<input type="text" id="dialog_title" name="dialog_title" value="Octane External Action Dialog" class="width&#45;&#45;250px" />
-							</label>
-						</div>
-					</div>
-					<div class="form-row">
-						<button onclick="setOctaneDialogTitle()">Set dialog title</button>
-						<br
-						/></div>
-				</fieldset>
-			</form>
-		</div>
-
-		<div id="closeOctaneDialogBlock" style="display: none">
-			<div class="divider-line"></div>
-			<form onsubmit="return false;">
-				<fieldset>
-					<div class="form-row">
-						<label>
-							<input
-									type="checkbox"
-									id="refresh_results"
-									name="refresh_results"
-									aria-label="Refresh results"
-									translate="external-details-refresh-results-checkbox"
-									translate-attribute="aria-label"
-							/>
-							<span>Refresh grid on close</span>
-						</label>
-					</div>
-					<div class="form-row">
-						<button onclick="closeOctaneDialog()">Close Dialog</button>
-						<br
-						/></div>
-				</fieldset>
-			</form>
-		</div>
-	</div>
-</div>-->
 </body>
+-->
 </html>
