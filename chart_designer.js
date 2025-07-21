@@ -1,3 +1,5 @@
+import { getTrendDrillCacheWorkItems } from './data_fetcher.js';
+
 const plannedColor = '#00abf3';
 const descopedColor = '#d41200';
 const unplannedColor = '#00796b';
@@ -99,16 +101,20 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                 },
             },
             //click events for the bars
-            onClick: (evt, elements) => {
+            onClick: async (evt, elements) => {
                 if (elements.length > 0) {
                     const index = elements[0].index;
                     const datasetIndex = elements[0].datasetIndex;
                     const label = evt.chart.data.labels[index];
                     const value = evt.chart.data.datasets[datasetIndex].data[index];
 
+                    const category = (datasetIndex === 0 ? [2,3] : (datasetIndex === 1 ? 3 : 1));
+
+                    const entities = await getTrendDrillCacheWorkItems(params, entityType, value.drillDownCacheID, category);
                     // Show modal with info
-                    document.getElementById('modalContent').innerText = `Details for Label: ${label}: Value - ${JSON.stringify(value)}, Index: ${index}, datasetIndex: ${datasetIndex}`;
+                    document.getElementById('modalContent').innerText = `Details for Label: ${label}: Value - ${JSON.stringify(value)}, Index: ${index}, datasetIndex: ${datasetIndex},  entities: ${entities.data.length}`;
                     document.getElementById('infoModal').style.display = 'block';
+
                 }
             },
             scales: {

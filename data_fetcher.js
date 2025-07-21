@@ -76,7 +76,7 @@ http://localhost:8080/dev/api/shared_spaces/1001/workspaces/1002/work_items?fiel
  */
 export async function getTrendDrillCacheWorkItems(params, entityType, cacheID, category) {
     let entityTypeQueryValue = (entityType === 'backlog_items' ? `;(subtype IN 'story','defect','quality_story');` : `;(subtype='${entityType}')`);
-    const response = await fetch(`${params.octane_url}/api/shared_spaces/${params.shared_space}/workspaces/${params.workspace}/work_items?fields=id,name,is_deleted_entity,trend_drill_down_field_old_values,trend_drill_down_field_new_values,phase,story_points,sprint,author,subtype,owner,entity_icon,author{full_name},owner{full_name},parent{entity_icon,subtype},release{end_date},detected_in_release{end_date},milestone{release_specific,date,release}&limit=2000&offset=0&order_by=id&query="((trend_drill_cache_data={((trend_drill_cache={(id='${cacheID}')});(category IN ${category}))});${entityTypeQueryValue})"&trend_drill_down_cache_data_category=2&trend_drill_down_cache_id=${cacheID}"`);
+    const response = await fetch(`${params.octane_url}/api/shared_spaces/${params.shared_space}/workspaces/${params.workspace}/work_items?fields=id,name,is_deleted_entity,trend_drill_down_field_old_values,trend_drill_down_field_new_values,phase,story_points,sprint,author,subtype,owner,entity_icon,author{full_name},owner{full_name},parent{entity_icon,subtype},release{end_date},detected_in_release{end_date},milestone{release_specific,date,release}&limit=2000&offset=0&order_by=id&query="((trend_drill_cache_data={((trend_drill_cache={(id='${cacheID}')});(category IN ${category}))})${entityTypeQueryValue})"`);//&trend_drill_down_cache_data_category=2&trend_drill_down_cache_id=${cacheID}"`);
     const data = await response.json();
     return data;
 }
