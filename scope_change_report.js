@@ -129,6 +129,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
     let planned = [];
     let descoped = [];
     let unplanned = [];
+    let trendDrillDownCacheId = [];
     if (releases.length > 0){
         if (selectedXAxis === "xaxis-release") {
             const Labels = createChartLabels("Release", releases, releaseMap);
@@ -143,9 +144,10 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                     planned.push(reportData.planned);
                     descoped.push(reportData.descoped);
                     unplanned.push(reportData.unplanned);
+                    trendDrillDownCacheId.push(reportData.trendDrillDownCacheId);
                 }
             }
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels);
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType);
             showLoading(false);
         } else if (selectedXAxis === "xaxis-sprint") {
             for (const releaseID of releases) {
@@ -164,11 +166,12 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                         planned.push(reportData.planned);
                         descoped.push(reportData.descoped);
                         unplanned.push(reportData.unplanned);
+                        trendDrillDownCacheId.push(reportData.trendDrillDownCacheId);
                     }
                 }
             }
             const Labels = createChartLabels("Sprint", releases, releaseMap);
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels);
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType);
             showLoading(false);
         } else if (selectedXAxis === "xaxis-milestone") {
             for (const releaseID of releases) {
@@ -185,15 +188,16 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                         planned.push(reportData.planned);
                         descoped.push(reportData.descoped);
                         unplanned.push(reportData.unplanned);
+                        trendDrillDownCacheId.push(reportData.trendDrillDownCacheId);
                     }
                 }
             }
             const Labels = createChartLabels("Milestone", releases, releaseMap);
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels);
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType);
             showLoading(false);
         }
     } else{
-        previousScopeChart = initScopeChart([0], [0], [0], []);
+        previousScopeChart = initScopeChart([0], [0], [0], [], [], params, selectedType);
         showLoading(false);
     }
 }
@@ -233,7 +237,7 @@ async function getScopeReportData(entityType, startDate, endDate, releaseId, spr
                     }
                 });
             }
-            return {planned: planned, descoped: descoped, unplanned: unplanned};
+            return {planned: planned, descoped: descoped, unplanned: unplanned, trendDrillDownCacheId: scopeChangeData.trendDrillDownCacheId};
             /*const addedEntities = await getTrendDrillCacheWorkItems(params, entityType, scopeChangeData.trendDrillDownCacheId, 1);
             const removedEntities = await getTrendDrillCacheWorkItems(params, entityType, scopeChangeData.trendDrillDownCacheId, 3);
             const unChangedEntities = await getTrendDrillCacheWorkItems(params, entityType, scopeChangeData.trendDrillDownCacheId, 2);

@@ -17,7 +17,7 @@
                 <input
                   type="number"
                   id="milestone-length"
-                  value="14"
+                  value="28"
                   min="1"
                   max="100"
                   class="number-input"
