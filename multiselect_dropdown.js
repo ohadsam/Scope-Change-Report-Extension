@@ -5,18 +5,16 @@
         if (!container) return;
 
         const html = `
-      <div class="custom-dropdown-wrapper">
-        <label>${entityName}:</label>
+      <div class="config-line custom-dropdown-wrapper">
+        <label class="config-label">${entityName}:</label>
         <div class="custom-dropdown">
           <div class="input-container">
             <div id="${containerId}-selected-tags" class="selected-tags"></div>
             <input type="text" id="${containerId}-selected" class="selection-display" readonly />
-            <button class="dropdown-toggle" type="button">
-              <span class="arrow">&#9662;</span>
-            </button>
+            <button class="dropdown-toggle" type="button" aria-label="Toggle dropdown"></button>
           </div>
           <div class="dropdown-content">
-            <input type="text" class="search-input" placeholder="Search...">
+            <input type="text" id="${containerId}-search" class="search-input" placeholder="Search...">
             <div class="options-scroll">
             <form>
               ${options.map(opt => `
@@ -25,9 +23,9 @@
             </form>
             </div>
             <div class="dropdown-buttons">
-                <button type="button" class="cancel-btn">Cancel</button>
-                <button type="button" class="clear-btn">Clear</button>
                 <button type="button" class="ok-btn">OK</button>
+                <button type="button" class="clear-btn">Clear</button>
+                <button type="button" class="cancel-btn">Cancel</button>
             </div>
           </div>
         </div>
@@ -46,6 +44,10 @@
 
         toggleBtn.addEventListener('click', () => {
             dropdown.classList.toggle('show');
+            const search = document.querySelector(`#${containerId}-search`);
+            setTimeout(() => {
+                search?.focus();
+            }, 200);
         });
 
         wrapper.querySelector('.ok-btn').addEventListener('click', () => {

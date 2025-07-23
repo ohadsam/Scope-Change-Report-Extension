@@ -7,10 +7,15 @@ const unplannedColor = '#00796b';
 let params;
 let entityType;
 
-export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labels, trendDrillDownCacheId, paramsVal, entityTypeVal) {
+export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labels, trendDrillDownCacheId, paramsVal, entityTypeVal, widgetName='Scope Change Report') {
 
     params = paramsVal;
     entityType = entityTypeVal;
+
+    //used for double click events on the legend
+    let lastClickTime = 0;
+    const doubleClickThreshold = 300; // milliseconds
+
 
     const ctx = document.getElementById('scopeChart').getContext('2d');
     const yChartMakHeight = (Math.max(plannedItems, unplannedItems, descopedItems) + 3);
@@ -75,16 +80,37 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                     onClick: function(e, legendItem, legend) {
                         const index = legendItem.index;
                         const ci = legend.chart;
-                        if (ci.isDatasetVisible(index)) {
-                            legendItem.hidden = true;
-                            ci.hide(index);
-                        } else {
+
+                        const currentTime = new Date().getTime();
+                        const timeDiff = currentTime - lastClickTime;
+                        lastClickTime = currentTime;
+                        if (timeDiff < doubleClickThreshold) {
+                            // Double-click detected
                             legendItem.hidden = false;
-                            ci.show(index);
+                            for (const legendIt of ci.legend.legendItems) {
+                                if (legendIt !== legendItem) {
+                                    legendIt.hidden = true;
+                                }
+                            }
+                            for (const legendIt of ci.legend.legendItems) {
+                                if (legendIt.hidden) {
+                                    ci.hide(legendIt.index);
+                                } else {
+                                    ci.show(legendIt.index);
+                                }
+                            }
+                        } else {
+                            if (ci.isDatasetVisible(index)) {
+                                legendItem.hidden = true;
+                                ci.hide(index);
+                            } else {
+                                legendItem.hidden = false;
+                                ci.show(index);
+                            }
                         }
                     }
                 },
-                title: {display: true, text: 'Scope Change Report', color: '#323435'},
+                title: {display: true, text: widgetName, color: '#323435'},
                 datalabels: {
                     anchor: 'center',
                     align: 'top',
@@ -132,7 +158,12 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                 },
                 stacked: false,
                 beginAtZero: true,
-                max: yChartMakHeight
+                max: yChartMakHeight,
+                title: {
+                    display: true,
+                    text: getYAxisLabel(entityType), // This is the Y-axis label
+                    color: '#323435',
+                }
             }
         }
         }
@@ -145,6 +176,22 @@ function createDataObject(labels, values, trendDrillDownCacheId) {
     let returnVal = [];
     for (let i=0; i<values.length; i++) {
         returnVal.push({x: labels[i], y: values[i], drillDownCacheID: trendDrillDownCacheId[i]});
+    }
+    return returnVal;
+}
+
+function getYAxisLabel(entityType) {
+    let returnVal = 'Number of ';
+    if (entityType === 'feature') {
+        returnVal += 'Features';
+    } else if (entityType === 'defect') {
+        returnVal += 'Defects';
+    } else if (entityType === 'story') {
+        returnVal += 'Stories';
+    } else if (entityType === 'quality_story') {
+        returnVal += 'Quality Stories';
+    } else {
+        returnVal += 'Backlog Items';
     }
     return returnVal;
 }

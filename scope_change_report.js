@@ -147,7 +147,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                     trendDrillDownCacheId.push(reportData.trendDrillDownCacheId);
                 }
             }
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType);
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, 'Release Scope Change Report');
             showLoading(false);
         } else if (selectedXAxis === "xaxis-sprint") {
             for (const releaseID of releases) {
@@ -171,7 +171,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                 }
             }
             const Labels = createChartLabels("Sprint", releases, releaseMap);
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType);
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, 'Sprint Scope Change Report');
             showLoading(false);
         } else if (selectedXAxis === "xaxis-milestone") {
             for (const releaseID of releases) {
@@ -193,7 +193,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                 }
             }
             const Labels = createChartLabels("Milestone", releases, releaseMap);
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType);
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, 'Milestone Scope Change Report');
             showLoading(false);
         }
     } else{

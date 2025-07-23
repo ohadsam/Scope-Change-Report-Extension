@@ -5,14 +5,16 @@
         if (!container) return;
 
         const html = `
-            <label for="xaxis-select">XAxis By:</label>
-            <select id="xaxis-select" class="select-dropdown">
-                <option value="xaxis-release">Release</option>
-                <option value="xaxis-sprint">Sprint</option>
-                <option value="xaxis-milestone">Milestone</option>
-            </select>
+            <div class="config-line">
+                <label class="config-label" for="xaxis-select">XAxis By:</label>
+                <select id="xaxis-select" class="select-dropdown">
+                    <option value="xaxis-release">Release</option>
+                    <option value="xaxis-sprint">Sprint</option>
+                    <option value="xaxis-milestone">Milestone</option>
+                </select>
+            </div>
             
-            <span id="milestone-length-container" class="margin--left--10">
+            <div id="milestone-length-container" class="margin--left--165 config-line buffer-container">
                 <label id="milestone-length-label" for="milestone-length">Length (Days):</label>
                 <input
                   type="number"
@@ -22,10 +24,10 @@
                   max="100"
                   class="number-input"
                 />
-            </span>
+            </div>
             
-            <span id="planning-buffer-container" class="margin--left--10">
-                <label id="start-date-planning-buffer-label" for="start-date-planning-buffer">Start Date Buffer(Days):</label>
+            <div id="planning-buffer-container" class="margin--left--165 config-line buffer-container">
+                <label id="start-date-planning-buffer-label" for="start-date-planning-buffer" class="number-input-label">Start Buffer(Days):</label>
                 <input
                   type="number"
                   id="start-date-planning-buffer"
@@ -34,7 +36,7 @@
                   max="1000"
                   class="number-input"
                 />
-                <label id="end-date-planning-buffer-label" for="end-date-planning-buffer" class="margin--left--10">End Date Buffer(Days):</label>
+                <label id="end-date-planning-buffer-label" for="end-date-planning-buffer" class="number-input-label">End Buffer(Days):</label>
                 <input
                   type="number"
                   id="end-date-planning-buffer"
@@ -43,7 +45,7 @@
                   max="1000"
                   class="number-input"
                 />
-            </span>
+            </div>
         `;
 
         container.innerHTML = html;
@@ -75,8 +77,8 @@
         const milestoneLengthContainer = document.getElementById('milestone-length-container');
         const planningBufferContainer = document.getElementById('planning-buffer-container');
 
-        milestoneLengthContainer.style.display = (select.value === 'xaxis-milestone') ? 'inline-block' : 'none';
-        planningBufferContainer.style.display = (select.value !== 'xaxis-milestone') ? 'inline-block' : 'none';
+        milestoneLengthContainer.style.display = (select.value === 'xaxis-milestone') ? 'flex' : 'none';
+        planningBufferContainer.style.display = (select.value !== 'xaxis-milestone') ? 'flex' : 'none';
     }
 
     function validateInputValue(inputField) {
