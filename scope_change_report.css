@@ -30,15 +30,38 @@ input[type="date"] {
 }
 
 input[type="number"] {
-	font-size: 14px;
 	border: 1px solid #cccccc;
-	font-size: 14px;
+	font-size: 13px;
 }
 
+.textarea-field:focus,
+input[type="text"]:focus,
 input[type="number"]:focus {
 	border-color: #cccccc;
 	outline: none;
 	box-shadow: none;
+}
+
+.text-input {
+	width: 350px;
+	font-size: 13px;
+	color: #5f6163;
+}
+
+.textarea-field {
+	height: 85px;
+	width: 350px;
+	font-size: 13px;
+	color: #5f6163;
+	display: flex;
+	align-items: center;
+	border: 1px solid #ccc;
+	padding: 4px 8px;
+	border-radius: 1px;
+	position: relative;
+	overflow: auto;
+	background-color: #fff;
+	resize: none;
 }
 
 /********************side bar**************************/

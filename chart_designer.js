@@ -135,8 +135,9 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                     const value = evt.chart.data.datasets[datasetIndex].data[index];
 
                     const category = (datasetIndex === 0 ? [2,3] : (datasetIndex === 1 ? 3 : 1));
+                    const deletedItemsCategory = (datasetIndex === 0 ? 2 : (datasetIndex === 1 ? 3 : 1));
 
-                    const entities = await getTrendDrillCacheWorkItems(params, entityType, value.drillDownCacheID, category);
+                    const entities = await getTrendDrillCacheWorkItems(params, entityType, value.drillDownCacheID, category, deletedItemsCategory);
                     // Show modal with info
                     document.getElementById('modalContent').innerText = `Details for Label: ${label}: Value - ${JSON.stringify(value)}, Index: ${index}, datasetIndex: ${datasetIndex},  entities: ${entities.data.length}`;
                     document.getElementById('infoModal').style.display = 'block';

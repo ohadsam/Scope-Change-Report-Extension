@@ -13,6 +13,7 @@ let sprintMap = {};
 let teamMap = {};
 let previousScopeChart = undefined;
 
+const graphNameTextField = document.getElementById('graph-name');
 const generateReportButton = document.getElementById('create-report');
 const showWidgetSideBarButton = document.getElementById('show-widget-btn');
 const typeSelect = document.getElementById('type-select');
@@ -34,8 +35,6 @@ function enableGenerateButton(enabledBtn) {
 async function generateReportClicked() {
     try {
         toggleSidebarSelection(showWidgetSideBarButton);
-        document.getElementById('config').style.display = 'none';
-        document.getElementById('widget').style.display = 'block';
         showError(false);
         let teamsAsString = selectedTeams ? selectedTeams.join(',') : undefined;
         await createScopeChangeReport(selectedReleases, undefined, teamsAsString)
@@ -147,7 +146,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                     trendDrillDownCacheId.push(reportData.trendDrillDownCacheId);
                 }
             }
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, 'Release Scope Change Report');
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, getGraphName('Release'));
             showLoading(false);
         } else if (selectedXAxis === "xaxis-sprint") {
             for (const releaseID of releases) {
@@ -171,7 +170,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                 }
             }
             const Labels = createChartLabels("Sprint", releases, releaseMap);
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, 'Sprint Scope Change Report');
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, getGraphName('Sprint'));
             showLoading(false);
         } else if (selectedXAxis === "xaxis-milestone") {
             for (const releaseID of releases) {
@@ -193,7 +192,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                 }
             }
             const Labels = createChartLabels("Milestone", releases, releaseMap);
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, 'Milestone Scope Change Report');
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, getGraphName('Milestone'));
             showLoading(false);
         }
     } else{
@@ -293,8 +292,18 @@ function showError(show, message) {
 function toggleSidebarSelection(selectedBtn) {
     document.querySelectorAll('.sidebar-btn').forEach(btn => {
         btn.classList.remove('active');
+        document.getElementById(btn.getAttribute("direct-to-att")).style.display = 'none';
     });
     selectedBtn.classList.add('active');
+    document.getElementById(selectedBtn.getAttribute("direct-to-att")).style.display = 'block';
+}
+
+function getGraphName(capitalDefaultName, defaultText = "Scope Change Report") {
+    if (graphNameTextField.value) {
+        return graphNameTextField.value;
+    } else {
+        return capitalDefaultName + " " + defaultText;
+    }
 }
 
 
@@ -303,11 +312,19 @@ function toggleSidebarSelection(selectedBtn) {
 
     //const container = document.querySelector('.parameter-container');
 
+    const showGeneralBtn = document.getElementById('show-general-btn');
+    showGeneralBtn.addEventListener('click', () => {
+        toggleSidebarSelection(showGeneralBtn);
+    });
+
     const showConfigBtn = document.getElementById('show-config-btn');
     showConfigBtn.addEventListener('click', () => {
         toggleSidebarSelection(showConfigBtn);
-        document.getElementById('config').style.display = 'block';
-        document.getElementById('widget').style.display = 'none';
+    });
+
+    const showDisplayBtn = document.getElementById('show-display-btn');
+    showDisplayBtn.addEventListener('click', () => {
+        toggleSidebarSelection(showDisplayBtn);
     });
 
     showWidgetSideBarButton.addEventListener('click', () => {

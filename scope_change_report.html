@@ -18,14 +18,29 @@
 <div class="layout-container">
 	<!-- Left Sidebar -->
 	<div class="sidebar">
-		<button id="show-config-btn" class="sidebar-btn active">Configuration</button>
-		<button id="show-widget-btn" class="sidebar-btn">Widget</button>
+		<button id="show-general-btn" class="sidebar-btn active" direct-to-att="general">General</button>
+		<button id="show-config-btn" class="sidebar-btn" direct-to-att="config">Data</button>
+		<button id="show-display-btn" class="sidebar-btn" direct-to-att="display">Display</button>
+		<button id="show-widget-btn" class="sidebar-btn" direct-to-att="widget">Preview</button>
 	</div>
 
 	<!-- Right Content Area -->
 	<div class="content">
+		<!-- general section -->
+		<div id="general" class="content-section">
+			<div class="controls">
+				<div class="config-line">
+					<label class="config-label" for="graph-name">Graph name</label>
+					<input type="text" id="graph-name" class="text-input input-container" value="Scope Change Report" maxlength="150"/>
+				</div>
+				<div class="config-line">
+					<label class="config-label" for="graph-description">Description</label>
+					<textarea id="graph-description" class="textarea-field" placeholder="Add Graph Description"></textarea>
+				</div>
+			</div>
+		</div>
 		<!-- Config Section -->
-		<div id="config" class="content-section">
+		<div id="config" class="content-section" style="display: none;">
 			<div class="controls">
 				<div class="config-line">
 					<label class="config-label" for="type-select">Type:</label>
@@ -45,6 +60,8 @@
 				<button id="create-report" class="generate-btn">Generate Report</button>
 			</div>
 		</div>
+
+		<div id="display" class="content-section" style="display: none;">Display</div>
 
 		<!-- Widget Section -->
 		<div id="widget" class="content-section" style="display: none;">
