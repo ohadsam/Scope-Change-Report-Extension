@@ -6,7 +6,7 @@
 
         const html = `
       <div class="config-line custom-dropdown-wrapper">
-        <label class="config-label">${entityName}:</label>
+        <label class="config-label">${entityName}</label>
         <div class="custom-dropdown">
           <div class="input-container">
             <div id="${containerId}-selected-tags" class="selected-tags"></div>

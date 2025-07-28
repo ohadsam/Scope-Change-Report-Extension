@@ -4,6 +4,7 @@ import { initScopeChart } from "./chart_designer.js";
 import { createMultiSelectDropDownComponent } from "./multiselect_dropdown.js";
 import { calculateDateInFormat } from "./date_utils.js";
 import { createScopeTypeSelectorComponent } from "./scope_type_selector.js";
+import { createYAxisSelectorComponent } from "./y_axis_selector.js";
 
 let params = {};
 let releases = [];
@@ -18,6 +19,7 @@ const generateReportButton = document.getElementById('create-report');
 const showWidgetSideBarButton = document.getElementById('show-widget-btn');
 const typeSelect = document.getElementById('type-select');
 let xaxisSelect = undefined
+let yaxisSelect = undefined;
 
 let selectedReleases = [];
 let selectedTeams = [];
@@ -122,6 +124,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
     if (previousScopeChart) {
         previousScopeChart.destroy();
     }
+
     const selectedType = typeSelect.value;
     const selectedXAxis = xaxisSelect.value;
     showLoading(true);
@@ -146,7 +149,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                     trendDrillDownCacheId.push(reportData.trendDrillDownCacheId);
                 }
             }
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, getGraphName('Release'));
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, getGraphName('Release'), getYAxisLabelPrefix());
             showLoading(false);
         } else if (selectedXAxis === "xaxis-sprint") {
             for (const releaseID of releases) {
@@ -170,7 +173,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                 }
             }
             const Labels = createChartLabels("Sprint", releases, releaseMap);
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, getGraphName('Sprint'));
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, getGraphName('Sprint'), getYAxisLabelPrefix());
             showLoading(false);
         } else if (selectedXAxis === "xaxis-milestone") {
             for (const releaseID of releases) {
@@ -192,7 +195,7 @@ async function createScopeChangeReport(releases, sprintId, teams) {
                 }
             }
             const Labels = createChartLabels("Milestone", releases, releaseMap);
-            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, getGraphName('Milestone'));
+            previousScopeChart = initScopeChart(planned, descoped, unplanned, Labels, trendDrillDownCacheId, params, selectedType, getGraphName('Milestone'), getYAxisLabelPrefix());
             showLoading(false);
         }
     } else{
@@ -220,23 +223,45 @@ async function getScopeReportData(entityType, startDate, endDate, releaseId, spr
             }
         }
         if (bgSuccess && scopeChangeData.trendDrillDownCacheId) {
-            const groupedEntities = await getTrendDrillCacheGroups(params, scopeChangeData.trendDrillDownCacheId);
-            let planned = 0;
-            let descoped = 0;
-            let unplanned = 0
-            if (groupedEntities.groups && groupedEntities.groups.length > 0) {
-                groupedEntities.groups.forEach(group => {
-                    if (group.value === 1) { //unplanned items
-                        unplanned = group.count;
-                    } else if (group.value === 3) { //descoped items
-                        planned += group.count;
-                        descoped = group.count;
-                    } else if(group.value === 2) { //unchaneged items
-                        planned += group.count;
-                    }
-                });
+            //if need to count the items
+            if (yaxisSelect.value === "yaxis-count") {
+                const groupedEntities = await getTrendDrillCacheGroups(params, scopeChangeData.trendDrillDownCacheId);
+                let planned = 0;
+                let descoped = 0;
+                let unplanned = 0
+                if (groupedEntities.groups && groupedEntities.groups.length > 0) {
+                    groupedEntities.groups.forEach(group => {
+                        if (group.value === 1) { //unplanned items
+                            unplanned = group.count;
+                        } else if (group.value === 3) { //descoped items
+                            planned += group.count;
+                            descoped = group.count;
+                        } else if (group.value === 2) { //unchaneged items
+                            planned += group.count;
+                        }
+                    });
+                }
+                return {
+                    planned: planned,
+                    descoped: descoped,
+                    unplanned: unplanned,
+                    trendDrillDownCacheId: scopeChangeData.trendDrillDownCacheId
+                };
+            } else { //if need to sum by story point fields
+                const addedEntities = await getTrendDrillCacheWorkItems(params, entityType, scopeChangeData.trendDrillDownCacheId, 1, 1);
+                const removedEntities = await getTrendDrillCacheWorkItems(params, entityType, scopeChangeData.trendDrillDownCacheId, 3, 3);
+                const unChangedEntities = await getTrendDrillCacheWorkItems(params, entityType, scopeChangeData.trendDrillDownCacheId, 2, 2);
+                const sumSelectValue = document.getElementById('sum-select').value;
+
+                let descoped = collectEntitiesDataByField(removedEntities.data, sumSelectValue);
+                let planned = collectEntitiesDataByField(unChangedEntities.data, sumSelectValue) + descoped;
+                let unplanned = collectEntitiesDataByField(addedEntities.data, sumSelectValue);
+                return {planned: planned,
+                        descoped: descoped,
+                        unplanned: unplanned,
+                        trendDrillDownCacheId: scopeChangeData.trendDrillDownCacheId}
+
             }
-            return {planned: planned, descoped: descoped, unplanned: unplanned, trendDrillDownCacheId: scopeChangeData.trendDrillDownCacheId};
             /*const addedEntities = await getTrendDrillCacheWorkItems(params, entityType, scopeChangeData.trendDrillDownCacheId, 1);
             const removedEntities = await getTrendDrillCacheWorkItems(params, entityType, scopeChangeData.trendDrillDownCacheId, 3);
             const unChangedEntities = await getTrendDrillCacheWorkItems(params, entityType, scopeChangeData.trendDrillDownCacheId, 2);
@@ -249,6 +274,24 @@ async function getScopeReportData(entityType, startDate, endDate, releaseId, spr
     }
 }
 
+function collectEntitiesDataByField(entities, fieldName) {
+    let sum=0;
+    entities.forEach(entity => {
+        sum += entity[fieldName] ? entity[fieldName] : 0;
+    });
+    return sum;
+}
+
+function getYAxisLabelPrefix() {
+    if (yaxisSelect.value === "yaxis-count") {
+        return 'Number of ';
+    } else {
+        const sumSelectedItem = document.getElementById('sum-select');
+        const sumSelectTextContent = sumSelectedItem.options[sumSelectedItem.selectedIndex].textContent;
+        return 'Sum of ' + sumSelectTextContent + ' for ';
+    }
+}
+
 function createChartLabels(entityName, entities, entityMap) {
     const returnValue = [];
     if (entityName === "Release") {
@@ -258,13 +301,13 @@ function createChartLabels(entityName, entities, entityMap) {
     } else if (entityName === "Sprint") {
         entities.forEach(entity => {
             for (const sprint of Object.values(entityMap[entity]['sprintMap'])) {
-                returnValue.push(`Release: ${entityMap[entity].name} - Sprint: ${sprint.name}`);
+                returnValue.push(`${entityMap[entity].name} - ${sprint.name}`);
             }
         });
     } else if (entityName === "Milestone") {
         entities.forEach(entity => {
             for (const milestone of Object.values(entityMap[entity]['milestoneMap'])) {
-                returnValue.push(`Release: ${entityMap[entity].name} - Milestone: ${milestone.name}`);
+                returnValue.push(`${entityMap[entity].name} - ${milestone.name}`);
             }
         });
     }
@@ -306,11 +349,28 @@ function getGraphName(capitalDefaultName, defaultText = "Scope Change Report") {
     }
 }
 
+function handleEntityTypeSelectChanged() {
+    const sumSelectValues = [];
+    if (typeSelect.value === 'feature') {
+        sumSelectValues.push({field: 'actual_story_points', label: 'Actual Story Points'});
+        sumSelectValues.push({field: 'initial_estimate', label: 'Initial Estimate'});
+        sumSelectValues.push({field: 'story_points', label: 'Story Points'});
+    } else {
+        sumSelectValues.push({field: 'estimated_hours', label: 'Estimated Hours'});
+        sumSelectValues.push({field: 'invested_hours', label: 'Invested Hours'});
+        sumSelectValues.push({field: 'remaining_hours', label: 'Remaining Hours'});
+        sumSelectValues.push({field: 'story_points', label: 'Story Points'});
+    }
+    yaxisSelect = createYAxisSelectorComponent('y-axis-selector', sumSelectValues);
+}
 
 (async function () {
     'use strict';
 
     //const container = document.querySelector('.parameter-container');
+    typeSelect.addEventListener('change', async () => {
+        handleEntityTypeSelectChanged();
+    });
 
     const showGeneralBtn = document.getElementById('show-general-btn');
     showGeneralBtn.addEventListener('click', () => {
@@ -338,6 +398,8 @@ function getGraphName(capitalDefaultName, defaultText = "Scope Change Report") {
     await initReleases();
 
     await initTeams();
+
+    handleEntityTypeSelectChanged();
 
 
     //startUserIdentityValidation();

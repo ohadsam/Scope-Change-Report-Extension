@@ -43,7 +43,7 @@
 		<div id="config" class="content-section" style="display: none;">
 			<div class="controls">
 				<div class="config-line">
-					<label class="config-label" for="type-select">Type:</label>
+					<label class="config-label" for="type-select">Type</label>
 					<select id="type-select" class="select-dropdown">
 						<option value="feature">Feature</option>
 						<option value="backlog_items">Backlog Items</option>
@@ -52,16 +52,23 @@
 						<option value="quality_story">Quality Story</option>
 					</select>
 				</div>
-
+				<div class="sub-header-config-line">
+					<label class="config-label sub-header">Filters</label>
+				</div>
 				<div id="multi-release-select"></div>
-				<div id="scope-type-selector"></div>
 				<div id="multi-team-select"></div>
 
-				<button id="create-report" class="generate-btn">Generate Report</button>
+				<button id="create-report" class="generate-btn" style="display: none;">Generate Report</button>
 			</div>
 		</div>
 
-		<div id="display" class="content-section" style="display: none;">Display</div>
+		<!-- Display Section -->
+		<div id="display" class="content-section" style="display: none;">
+			<div class="controls">
+				<div id="scope-type-selector"></div>
+				<div id="y-axis-selector"></div>
+			</div>
+		</div>
 
 		<!-- Widget Section -->
 		<div id="widget" class="content-section" style="display: none;">

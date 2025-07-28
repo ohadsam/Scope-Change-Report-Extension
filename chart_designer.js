@@ -1,13 +1,13 @@
 import { getTrendDrillCacheWorkItems } from './data_fetcher.js';
 
-const plannedColor = '#00abf3';
-const descopedColor = '#d41200';
-const unplannedColor = '#00796b';
+const plannedColor = '#3382FF';
+const descopedColor = '#E60054';
+const unplannedColor = '#7E8794';
 
 let params;
 let entityType;
 
-export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labels, trendDrillDownCacheId, paramsVal, entityTypeVal, widgetName='Scope Change Report') {
+export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labels, trendDrillDownCacheId, paramsVal, entityTypeVal, widgetName='Scope Change Report', yAxisPrefix) {
 
     params = paramsVal;
     entityType = entityTypeVal;
@@ -28,7 +28,6 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
             datasets: [
                 {
                     label: 'Planned',
-                    //data: plannedItems,
                     data: createDataObject(Labels, plannedItems, trendDrillDownCacheId),
                     backgroundColor: plannedColor
                 },
@@ -49,17 +48,17 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'right',
+                    position: 'top',
                     align: 'start',
                     display: true,
                     labels: {
                         color: '#777',
                         usePointStyle: false,
-                        boxWidth: 15,
-                        boxHeight: 15,
+                        boxWidth: 10,
+                        boxHeight: 10,
                         padding: 10,
                         font: {
-                            size: 11,
+                            size: 10,
                         },
                         generateLabels: function(chart) {
                             const datasets = chart.data.datasets;
@@ -114,7 +113,7 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                 datalabels: {
                     anchor: 'center',
                     align: 'top',
-                    color: '#000',
+                    color: '#FFF',
                     font: {
                         weight: 'bold'
                     },
@@ -162,7 +161,7 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                 max: yChartMakHeight,
                 title: {
                     display: true,
-                    text: getYAxisLabel(entityType), // This is the Y-axis label
+                    text: getYAxisLabel(yAxisPrefix, entityType), // This is the Y-axis label
                     color: '#323435',
                 }
             }
@@ -181,8 +180,8 @@ function createDataObject(labels, values, trendDrillDownCacheId) {
     return returnVal;
 }
 
-function getYAxisLabel(entityType) {
-    let returnVal = 'Number of ';
+function getYAxisLabel(prefix, entityType) {
+    let returnVal = prefix;
     if (entityType === 'feature') {
         returnVal += 'Features';
     } else if (entityType === 'defect') {
