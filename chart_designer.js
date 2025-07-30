@@ -1,3 +1,4 @@
+
 import { getTrendDrillCacheWorkItems } from './data_fetcher.js';
 
 const plannedColor = '#3382FF';
@@ -111,9 +112,23 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                 },
                 title: {display: true, text: widgetName, color: '#323435'},
                 datalabels: {
-                    anchor: 'center',
-                    align: 'top',
-                    color: '#FFF',
+                    anchor: function(context) {
+                        const max = context.chart.scales.y.max;
+                        const value = context.dataset.data[context.dataIndex];
+                        return value.y < max * 0.05 ? 'end' : 'center';
+                    },
+                    align: function(context) {
+                        const max = context.chart.scales.y.max;
+                        const value = context.dataset.data[context.dataIndex];
+                        return value.y < max * 0.05 ? 'top' : 'center';
+                    },
+                    color: function(context) {
+                        const max = context.chart.scales.y.max;
+                        const value = context.dataset.data[context.dataIndex];
+                        return value.y < max * 0.05 ? '#000000' : '#FFFFFF';
+                    },
+                    clamp: true, // Prevents labels from being drawn outside the chart area
+                    clip: false, // Allows labels to overflow if needed
                     font: {
                         weight: 'bold'
                     },
@@ -122,7 +137,6 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                         // If value is an object, return its `y` property
                         return typeof value === 'object' && value !== null ? Math.round(value.y) : Math.round(value);
                     },
-
                 },
             },
             //click events for the bars
@@ -144,28 +158,28 @@ export function initScopeChart(plannedItems, descopedItems, unplannedItems, Labe
                 }
             },
             scales: {
-            x: {
-                grid: {
-                    display: false
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    stacked: false,
+                    barPercentage: 1.0,
+                    categoryPercentage: 0
                 },
-                stacked: false,
-                barPercentage: 1.0,
-                categoryPercentage: 0
-            },
-            y: {
-                grid: {
-                    display: false
-                },
-                stacked: false,
-                beginAtZero: true,
-                max: yChartMakHeight,
-                title: {
-                    display: true,
-                    text: getYAxisLabel(yAxisPrefix, entityType), // This is the Y-axis label
-                    color: '#323435',
+                y: {
+                    grid: {
+                        display: false
+                    },
+                    stacked: false,
+                    beginAtZero: true,
+                    max: yChartMakHeight,
+                    title: {
+                        display: true,
+                        text: getYAxisLabel(yAxisPrefix, entityType), // This is the Y-axis label
+                        color: '#323435',
+                    }
                 }
             }
-        }
         }
     });
 

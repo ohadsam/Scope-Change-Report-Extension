@@ -257,9 +257,9 @@ async function getScopeReportData(entityType, startDate, endDate, releaseId, spr
                 let planned = collectEntitiesDataByField(unChangedEntities.data, sumSelectValue) + descoped;
                 let unplanned = collectEntitiesDataByField(addedEntities.data, sumSelectValue);
                 return {planned: planned,
-                        descoped: descoped,
-                        unplanned: unplanned,
-                        trendDrillDownCacheId: scopeChangeData.trendDrillDownCacheId}
+                    descoped: descoped,
+                    unplanned: unplanned,
+                    trendDrillDownCacheId: scopeChangeData.trendDrillDownCacheId}
 
             }
             /*const addedEntities = await getTrendDrillCacheWorkItems(params, entityType, scopeChangeData.trendDrillDownCacheId, 1);
@@ -515,144 +515,144 @@ function handleEntityTypeSelectChanged() {
             console.log('octane message posted');
         };*/
 
-        /*window.notifyOfNewOctaneEntity = function notifyOfNewOctaneEntity() {
-            if (!entityIdInput.value) {
-                alert('No entity_id was sent');
-                return;
-            }
-
-            const message = {
-                event_name: 'octane_entity_was_added',
-                workspace: params.workspace,
-                shared_space: params.shared_space,
-                data: {
-                    entity_type: entityTypeInput.value,
-                    entity_id: entityIdInput.value,
-                },
-            };
-
-            ownerWindow.postMessage(message, '*');
-
-            console.log('octane message posted');
-        };
-
-        window.updateSettings = function updateSettings(context) {
-            // eslint-disable-next-line no-alert
-            const text = prompt('message to save to settings', '');
-            if (!text) {
-                return;
-            }
-
-            const message = {
-                event_name: 'octane_update_settings',
-                workspace: params.workspace,
-                shared_space: params.shared_space,
-                data: {
-                    context: context,
-                    panel_id: params.panel_id || params.dialog_id,
-                    settings: {text: text},
-                },
-            };
-
-            ownerWindow.postMessage(message, '*');
-
-            console.log('octane message posted');
-        };
-
-        window.readSettings = function readSettings(context) {
-            const message = {
-                event_name: 'octane_read_settings',
-                workspace: params.workspace,
-                shared_space: params.shared_space,
-                data: {
-                    context: context,
-                    panel_id: params.panel_id || params.dialog_id,
-                },
-            };
-
-            ownerWindow.postMessage(message, '*');
-
-            console.log('octane message posted');
-        };
-
-        window.addEventListener('message', (event) => {
-            if (event.data?.event_name === 'octane_settings') {
-                const message = `Received settings: \r\n ${JSON.stringify(event.data.data, null, '  ')}`;
-                console.log(message);
-                alert(message);
-            }
-        });
-
-        if (liveInOctaneDialog && params.dialog_id) {
-            document.querySelector('#setOctaneDialogTitleBlock').style.display = 'block';
-            document.querySelector('#closeOctaneDialogBlock').style.display = 'block';
-
-            document.querySelector('#dialogId').innerText = params.dialog_id;
-            window.setOctaneDialogTitle = function setOctaneDialogTitle() {
-                const message = {
-                    event_name: 'octane_set_dialog_title',
-                    workspace: params.workspace,
-                    shared_space: params.shared_space,
-                    data: {
-                        dialog_id: params.dialog_id,
-                        title: document.querySelector('#dialog_title').value,
-                    },
-                };
-
-                ownerWindow.postMessage(message, '*');
-
-                console.log('octane message posted');
-            };
-
-            window.setOctaneDialogTitle(); // set initial dialog title value
-
-            window.closeOctaneDialog = function closeOctaneDialog() {
-                const message = {
-                    event_name: 'octane_close_dialog',
-                    workspace: params.workspace,
-                    shared_space: params.shared_space,
-                    data: {
-                        dialog_id: params.dialog_id,
-                        refresh: document.querySelector('#refresh_results').checked,
-                    },
-                };
-
-                ownerWindow.postMessage(message, '*');
-
-                console.log('octane message posted');
-            };
-        }
-    }
-
-    window.tryLoadOctaneData = function tryLoadOctaneData() {
-        if (!params.octane_url) {
+    /*window.notifyOfNewOctaneEntity = function notifyOfNewOctaneEntity() {
+        if (!entityIdInput.value) {
+            alert('No entity_id was sent');
             return;
         }
 
-        const octane_url = params.octane_url;
-        const url = octane_url + '/api/shared_spaces/' + params.shared_space + '/workspaces';
-
-        let request = new XMLHttpRequest();
-        request.open('GET', url, true);
-        request.withCredentials = true;
-        request.setRequestHeader('Accept', 'application/json');
-        request.setRequestHeader('HPECLIENTTYPE', 'external-details-app');
-
-        request.onreadystatechange = function () {
-            document.querySelector('#canFetchDataValue').innerText = request.status === 200;
+        const message = {
+            event_name: 'octane_entity_was_added',
+            workspace: params.workspace,
+            shared_space: params.shared_space,
+            data: {
+                entity_type: entityTypeInput.value,
+                entity_id: entityIdInput.value,
+            },
         };
 
-        request.send();
-    };*/
+        ownerWindow.postMessage(message, '*');
 
-   /* function addParam([name, value]) {
-        params[name] = value;
+        console.log('octane message posted');
+    };
 
-        const item = document.createElement('li');
-        item.innerText = name + ' : ' + value;
+    window.updateSettings = function updateSettings(context) {
+        // eslint-disable-next-line no-alert
+        const text = prompt('message to save to settings', '');
+        if (!text) {
+            return;
+        }
 
-        container.appendChild(item);
-    }*/
+        const message = {
+            event_name: 'octane_update_settings',
+            workspace: params.workspace,
+            shared_space: params.shared_space,
+            data: {
+                context: context,
+                panel_id: params.panel_id || params.dialog_id,
+                settings: {text: text},
+            },
+        };
+
+        ownerWindow.postMessage(message, '*');
+
+        console.log('octane message posted');
+    };
+
+    window.readSettings = function readSettings(context) {
+        const message = {
+            event_name: 'octane_read_settings',
+            workspace: params.workspace,
+            shared_space: params.shared_space,
+            data: {
+                context: context,
+                panel_id: params.panel_id || params.dialog_id,
+            },
+        };
+
+        ownerWindow.postMessage(message, '*');
+
+        console.log('octane message posted');
+    };
+
+    window.addEventListener('message', (event) => {
+        if (event.data?.event_name === 'octane_settings') {
+            const message = `Received settings: \r\n ${JSON.stringify(event.data.data, null, '  ')}`;
+            console.log(message);
+            alert(message);
+        }
+    });
+
+    if (liveInOctaneDialog && params.dialog_id) {
+        document.querySelector('#setOctaneDialogTitleBlock').style.display = 'block';
+        document.querySelector('#closeOctaneDialogBlock').style.display = 'block';
+
+        document.querySelector('#dialogId').innerText = params.dialog_id;
+        window.setOctaneDialogTitle = function setOctaneDialogTitle() {
+            const message = {
+                event_name: 'octane_set_dialog_title',
+                workspace: params.workspace,
+                shared_space: params.shared_space,
+                data: {
+                    dialog_id: params.dialog_id,
+                    title: document.querySelector('#dialog_title').value,
+                },
+            };
+
+            ownerWindow.postMessage(message, '*');
+
+            console.log('octane message posted');
+        };
+
+        window.setOctaneDialogTitle(); // set initial dialog title value
+
+        window.closeOctaneDialog = function closeOctaneDialog() {
+            const message = {
+                event_name: 'octane_close_dialog',
+                workspace: params.workspace,
+                shared_space: params.shared_space,
+                data: {
+                    dialog_id: params.dialog_id,
+                    refresh: document.querySelector('#refresh_results').checked,
+                },
+            };
+
+            ownerWindow.postMessage(message, '*');
+
+            console.log('octane message posted');
+        };
+    }
+}
+
+window.tryLoadOctaneData = function tryLoadOctaneData() {
+    if (!params.octane_url) {
+        return;
+    }
+
+    const octane_url = params.octane_url;
+    const url = octane_url + '/api/shared_spaces/' + params.shared_space + '/workspaces';
+
+    let request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.withCredentials = true;
+    request.setRequestHeader('Accept', 'application/json');
+    request.setRequestHeader('HPECLIENTTYPE', 'external-details-app');
+
+    request.onreadystatechange = function () {
+        document.querySelector('#canFetchDataValue').innerText = request.status === 200;
+    };
+
+    request.send();
+};*/
+
+    /* function addParam([name, value]) {
+         params[name] = value;
+
+         const item = document.createElement('li');
+         item.innerText = name + ' : ' + value;
+
+         container.appendChild(item);
+     }*/
 
     /*async function checkUserIdentity(params) {
         const octane_url = params.octane_url;
